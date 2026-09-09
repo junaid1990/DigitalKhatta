@@ -38,6 +38,8 @@ export const DatabaseProvider = ({children}) => {
 
   const createTables = async () => {
     const db = dbRef.current;
+    // Enable foreign key support so CASCADE deletes work
+    await db.executeSql('PRAGMA foreign_keys = ON');
     await db.executeSql(`
       CREATE TABLE IF NOT EXISTS contacts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -107,6 +109,10 @@ export const DatabaseProvider = ({children}) => {
 
   const deleteContact = async id => {
     const db = await getDB();
+    // Enable foreign keys and also manually delete transactions
+    // to guarantee cleanup even if CASCADE is not enforced
+    await db.executeSql('PRAGMA foreign_keys = ON');
+    await db.executeSql('DELETE FROM transactions WHERE contact_id = ?', [id]);
     await db.executeSql('DELETE FROM contacts WHERE id = ?', [id]);
   };
 

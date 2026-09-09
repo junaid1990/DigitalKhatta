@@ -70,11 +70,15 @@ const HomeScreen = ({navigation}) => {
   const loadData = useCallback(async () => {
     try {
       const type = activeTab === 'all' ? null : activeTab;
+      // Small delay ensures DB writes are fully committed before reading
+      await new Promise(resolve => setTimeout(resolve, 100));
       const [data, sum] = await Promise.all([
         db.getContacts(type),
         db.getSummary(),
       ]);
       setContacts(data);
+      // Always reset to 0 first then set new value to force UI update
+      setSummary({totalToReceive: 0, totalToPay: 0});
       setSummary(sum);
     } catch (e) {
       console.error('Load error:', e);
