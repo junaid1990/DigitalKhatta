@@ -240,6 +240,19 @@ export const DatabaseProvider = ({children}) => {
   // CORRECT: per-contact balance first, then sum positives/negatives
   const getSummary = async () => {
     const db = await getDB();
+
+    // First check if any transactions exist at all
+    const [countResult] = await db.executeSql(
+      'SELECT COUNT(*) as cnt FROM transactions'
+    );
+    const count = countResult.rows.item(0).cnt;
+
+    // If no transactions, return zeros immediately
+    if (count === 0) {
+      return {totalToReceive: 0, totalToPay: 0};
+    }
+
+    // Per-contact balance: positive = they owe you, negative = you owe them
     const [results] = await db.executeSql(`
       SELECT
         COALESCE(SUM(CASE WHEN bal > 0 THEN bal ELSE 0 END), 0) AS totalToReceive,
@@ -253,10 +266,15 @@ export const DatabaseProvider = ({children}) => {
         GROUP BY contact_id
       ) AS cb
     `);
+
+    if (results.rows.length === 0) {
+      return {totalToReceive: 0, totalToPay: 0};
+    }
+
     const row = results.rows.item(0);
     return {
-      totalToReceive: row.totalToReceive,
-      totalToPay: row.totalToPay,
+      totalToReceive: Number(row.totalToReceive) || 0,
+      totalToPay: Number(row.totalToPay) || 0,
     };
   };
 

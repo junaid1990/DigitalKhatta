@@ -117,15 +117,15 @@ const HomeScreen = ({navigation}) => {
           style: 'destructive',
           onPress: async () => {
             await db.deleteContact(contact.id);
-            loadData();
+            await loadData();
           },
         },
       ],
     );
   };
 
-  const toReceive = summary.totalToReceive || 0;
-  const toPay = summary.totalToPay || 0;
+  const toReceive = Number(summary.totalToReceive) || 0;
+  const toPay = Number(summary.totalToPay) || 0;
 
   const renderContact = ({item}) => {
     const balance = item.balance;

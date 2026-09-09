@@ -53,7 +53,7 @@ const ContactDetailScreen = ({route, navigation}) => {
         style: 'destructive',
         onPress: async () => {
           await db.deleteTransaction(txn.id);
-          loadData();
+          await loadData();
         },
       },
     ]);
